@@ -14,6 +14,11 @@ export async function* handleCompletionEvent(
   lastResponseId?: string
 ): AsyncGenerator<StreamEvent> {
   if (event.response.output[0]?.type === "function_call") {
+    console.debug(
+      "Received a function call response: ",
+      event.response.output[0]
+    );
+
     const args = JSON.parse(event.response.output[0].arguments);
     const preferences: Preferences = {
       country: args.country ?? null,
@@ -22,6 +27,7 @@ export async function* handleCompletionEvent(
     };
     yield { type: "preferences", preferences } as PreferencesResponse;
 
+    // We need to prompt again, forcing a conversational response to give back to the user
     yield* converse(message, lastResponseId, true);
   } else {
     yield {

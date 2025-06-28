@@ -31,8 +31,12 @@ export async function* converse(
 
   for await (const event of stream) {
     if (event.type === "response.output_text.delta") {
+      console.debug("Received streamed output text: ", event.delta);
+
       yield event.delta;
     } else if (event.type === "response.completed") {
+      console.info("The chat response was completed: ", event.response.id);
+
       yield* handleCompletionEvent(event, message, lastResponseId);
     }
   }
