@@ -4,6 +4,7 @@ export const runtime = "edge";
 
 export async function POST(req: Request) {
   const { message, lastResponseId } = await req.json();
+  console.info("Received an api stream request: ", message, lastResponseId);
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({

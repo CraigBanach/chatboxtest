@@ -23,7 +23,7 @@ export default function Home() {
 
   useEffect(() => {
     send(
-      "My current location is 32-38 Antler, Tech Space, Leman Street, London, England, E1 8EW. Can you provide me with a nearby attraction or restaurant that may interest me?"
+      "You know that (but I have not told you) my current location is 32-38 Antler, Tech Space, Leman Street, London, England, E1 8EW. Can you provide me with a nearby attraction or restaurant that may interest me? "
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -46,7 +46,6 @@ export default function Home() {
       setInput("");
     } else {
       user = messageToSend;
-      setMessages((prev) => [...prev, user]);
     }
 
     const res = await fetch("/api/stream", {
@@ -71,12 +70,16 @@ export default function Home() {
         const parsedValue = JSON.parse(decodedValue);
 
         if (parsedValue.type === "preferences") {
+          console.debug("Updating preference information: ", parsedValue);
+
           const prefResp = parsedValue as PreferencesResponse;
           updatePreferences(prefResp.preferences);
           continue;
         }
 
         if (parsedValue.type === "response.completed") {
+          console.debug("The chat response was completed: ", parsedValue);
+
           const compResp = parsedValue as CompletionResponse;
           setLastResponseId(compResp.responseId);
           return;
