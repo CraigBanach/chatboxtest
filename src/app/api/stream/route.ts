@@ -1,17 +1,18 @@
+import { converse } from "../../services/chatService";
+
+
 export const runtime = "edge";
 
 export async function POST(req: Request) {
-  const { message } = await req.json();
+  const { message, lastResponseId } = await req.json();
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
       console.log(`Received message: ${message}`);
-      const text = `Echo: ${message}`;
-      for (const ch of text) {
-        controller.enqueue(encoder.encode(ch));
-        await new Promise((r) => setTimeout(r, 50));
-      }
+      for await (const chunk of converse(message, lastResponseId))
+        controller.enqueue(encoder.encode(chunk.toString()));
+
       controller.close();
     },
   });

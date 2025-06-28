@@ -4,22 +4,44 @@ import { useState, useRef, useEffect } from "react";
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
+  const [lastResponseId, setLastResponseId] = useState<string | null>();
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView();
   }, [messages]);
 
-  async function send() {
-    if (!input.trim()) return;
-    const user = input.trim();
-    setMessages((prev) => [...prev, user]);
-    setInput("");
+  useEffect(() => {
+    // In a production application, you'd take the x-forwarded-for header,
+    // geolocate the person based upon that & then use that address to do the
+    // initial chat
+    send(
+      "My current location is 32-38 Antler, Tech Space, Leman Street, London, England, E1 8EW. Can you provide me with a nearby attraction or restaurant that may interest me?"
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function send(messageToSend?: string) {
+    let user: string;
+
+    if (!messageToSend) {
+      if (!input.trim()) return;
+      user = input.trim();
+      setMessages((prev) => [...prev, user]);
+      setInput("");
+    } else {
+      user = messageToSend;
+    }
 
     const res = await fetch("/api/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: user }),
+      // It's possible that we send multiple messages without seeing a response
+      // for network reasons or otherwise. In a production implementation, I'd
+      // probably want to store not only the lastResponseId, but also
+      // some sort of lastMessage property as well, that we could pass down
+      // eventually to the AI
+      body: JSON.stringify({ message: user, lastResponseId }),
     });
 
     if (!res.body) return;
@@ -30,7 +52,24 @@ export default function Home() {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
+      const decodedValue = decoder.decode(value);
+
+      // This whole try block is bleeding server implementation into the client.
+      // With more time, I would figure out a better way to do this that doesn't have
+      // this problem
+      try {
+        const parsedValue = JSON.parse(decodedValue);
+
+        if (parsedValue["type"] === "response.completed") {
+          setLastResponseId(parsedValue["responseId"]);
+          return;
+        }
+      } catch (e) {
+        console.debug("Failed to JSON parse value ", value, e);
+      }
+
       ai += decoder.decode(value);
+      // TODO: Scrolling while message is being added sucks
       setMessages((prev) => {
         const copy = [...prev];
         copy[copy.length - 1] = ai;
@@ -65,7 +104,7 @@ export default function Home() {
           placeholder="Type a message"
         />
         <button
-          onClick={send}
+          onClick={() => send()}
           className="px-3 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
         >
           Send
