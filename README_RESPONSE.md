@@ -1,3 +1,9 @@
+# My Submission
+
+In the interests of time, I have not implemented a production ready solution, but something that hopefully showcases my skills & ways of working. I have noted below further improvements that I would look to make if this solution was to be production ready.
+
+## 
+
 ## Things to mention
 
 Response is using markdown, there's probably a way to prevent this coming back from OpenAI
