@@ -19,3 +19,4 @@ With additional time, for a production application, I'd make these additional im
 - The UI has been relatively untouched, but it would be good to show user feedback for failed requests as well as a loading state (I like to use skeletons).
 - It could be possible for the user to type multiple messages or not receive a response. It would be better if we stored both the last response & last request & used this to more intelligently prompt the AI in cases like this.
 - There are no unit or integration tests
+- I don't think I came up with a great solution for getting the onboarding information from the AI. We have to make two requests when a user is creating or adding their onboarding information & I wonder if there is a cleaner way of doing this. More exploration is needed on this.
