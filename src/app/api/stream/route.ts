@@ -1,6 +1,5 @@
 import { converse } from "../../services/chatService";
 
-
 export const runtime = "edge";
 
 export async function POST(req: Request) {
